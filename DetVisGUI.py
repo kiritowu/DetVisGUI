@@ -168,17 +168,16 @@ class COCO_dataset:
         if det_file != '':
             if det_file.endswith('.pkl'):
                 with open(det_file, 'rb') as f:
-                    det_results = np.asarray(
-                        pickle.load(f), dtype=object)  # [(bg + cls), images]
+                    detection_ress = pickle.load(f)
 
-                # dim should be (class, image)
-                if len(det_results.shape) == 2:
-                    det_results = np.transpose(det_results, (1, 0))
-
-                # dim should be (class, image, mask)
-                elif len(det_results.shape) == 3:
-                    det_results = np.transpose(det_results, (2, 0, 1))
+                if "segmentation" in detection_ress[0]["pred_instances"]:
                     self.mask = True
+                    raise NotImplementedError("Mask is not fixed yet.")
+
+                elif "bboxes" in detection_ress[0]["pred_instances"]:
+                    for res in detection_ress:
+                        img_idx = self.img2idx[res["img_id"]]
+                        raise NotImplementedError("Bbox is not fixed yet.")
 
             elif det_file.endswith('.json'):
                 with open(det_file) as f:
@@ -186,28 +185,49 @@ class COCO_dataset:
 
                 if 'segmentation' in json_results[0]:
                     self.mask = True
-                    det_results = [[[np.empty((0, 5)),[]] for _ in range(len(self.img_list))] for _ in range(len(self.cat2idx))]
+                    det_results = [
+                        [
+                            [np.empty((0, 5)), []]
+                            for _ in range(len(self.cat2idx))
+                        ]
+                        for _ in range(len(self.img_list))
+                    ]
                    
                     for res in json_results:
                         img_idx = self.img2idx[res['image_id']]
                         cat_idx = self.cat2idx[res['category_id']]
                         x, y, w, h = res['bbox']
                               
-                        det_results[cat_idx][img_idx][0] = np.concatenate(
-                        	(det_results[cat_idx][img_idx][0], np.asarray([x, y, x+w, y+h, res['score']]).reshape(1, -1))
+                        det_results[img_idx][cat_idx][0] = np.concatenate(
+                            (
+                                det_results[img_idx][cat_idx][0],
+                                np.asarray(
+                                    [x, y, x + w, y + h, res["score"]]
+                                ).reshape(1, -1),
+                            )
                         )
-                        det_results[cat_idx][img_idx][1].append(res['segmentation'])
+                        det_results[img_idx][cat_idx][1].append(
+                            res['segmentation']
+                        )
 
                 elif 'bbox' in json_results[0]:
-                    det_results = [[np.empty((0, 5)) for _ in range(len(self.img_list))] for _ in range(len(self.cat2idx))]
-                
-                    for res in json_results:
-                        img_idx = self.img2idx[res['image_id']]
-                        cat_idx = self.cat2idx[res['category_id']]
-                        x, y, w, h = res['bbox']
+                    det_results = [
+                        [np.empty((0, 5)) for _ in range(len(self.cat2idx))]
+                        for _ in range(len(self.img_list))
+                    ]
 
-                        det_results[cat_idx][img_idx] = np.concatenate(
-                        	(det_results[cat_idx][img_idx], np.asarray([x, y, x+w, y+h, res['score']]).reshape(1, -1))
+                    for res in json_results:
+                        img_idx = self.img2idx[res["image_id"]]
+                        cat_idx = self.cat2idx[res["category_id"]]
+                        x, y, w, h = res["bbox"]
+
+                        det_results[img_idx][cat_idx] = np.concatenate(
+                            (
+                                det_results[img_idx][cat_idx],
+                                np.asarray(
+                                    [x, y, x + w, y + h, res["score"]]
+                                ).reshape(1, -1),
+                            )
                         )
                         
                 det_results = np.asarray(det_results, dtype=object)
