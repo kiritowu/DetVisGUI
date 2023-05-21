@@ -595,7 +595,7 @@ class vis_tool:
 
     def get_iou(self, det):
 
-        iou = np.zeros_like(det)
+        iou = np.zeros((det.shape[0], det.shape[1]))  # (no_cat, no_img)
         GT = self.data_info.get_singleImg_gt(self.img_name)
         
         for idx, cls_objs in enumerate(det):
