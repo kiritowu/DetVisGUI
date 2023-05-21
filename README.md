@@ -2,6 +2,8 @@
 
 ## UPDATE
 
+2023/05/22 : Patched visualisation for COCODataset with JSON file
+
 2021/04/17 : Add save all images function.
 
 2021/01/05 : Support json format for det_file.
