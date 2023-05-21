@@ -11,10 +11,10 @@ from tkinter import (END, Button, Checkbutton, E, Entry, IntVar, Label,
 
 import cv2
 import matplotlib
-import mmcv
 import numpy as np
 import platform
 import pycocotools.mask as maskUtils
+from mmengine.config import Config
 from PIL import Image, ImageTk
 from tqdm import trange
 
@@ -314,7 +314,7 @@ class vis_tool:
 
     def __init__(self):
         self.args = parse_args()
-        cfg = mmcv.Config.fromfile(self.args.config)
+        cfg = Config.fromfile(self.args.config)
         self.window = Tk()
         self.menubar = Menu(self.window)
 
