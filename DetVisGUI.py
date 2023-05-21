@@ -188,32 +188,32 @@ class COCO_dataset:
                     det_results = [
                         [
                             [np.empty((0, 5)), []]
-                            for _ in range(len(self.cat2idx))
+                            for _ in range(len(self.img_list))
                         ]
-                        for _ in range(len(self.img_list))
+                        for _ in range(len(self.cat2idx))
                     ]
-                   
+
                     for res in json_results:
                         img_idx = self.img2idx[res['image_id']]
                         cat_idx = self.cat2idx[res['category_id']]
                         x, y, w, h = res['bbox']
-                              
-                        det_results[img_idx][cat_idx][0] = np.concatenate(
+
+                        det_results[cat_idx][img_idx][0] = np.concatenate(
                             (
-                                det_results[img_idx][cat_idx][0],
+                                det_results[cat_idx][img_idx][0],
                                 np.asarray(
                                     [x, y, x + w, y + h, res["score"]]
                                 ).reshape(1, -1),
                             )
                         )
-                        det_results[img_idx][cat_idx][1].append(
+                        det_results[cat_idx][img_idx][1].append(
                             res['segmentation']
                         )
 
                 elif 'bbox' in json_results[0]:
                     det_results = [
-                        [np.empty((0, 5)) for _ in range(len(self.cat2idx))]
-                        for _ in range(len(self.img_list))
+                        [np.empty((0, 5)) for _ in range(len(self.img_list))]
+                        for _ in range(len(self.cat2idx))
                     ]
 
                     for res in json_results:
@@ -221,9 +221,9 @@ class COCO_dataset:
                         cat_idx = self.cat2idx[res["category_id"]]
                         x, y, w, h = res["bbox"]
 
-                        det_results[img_idx][cat_idx] = np.concatenate(
+                        det_results[cat_idx][img_idx] = np.concatenate(
                             (
-                                det_results[img_idx][cat_idx],
+                                det_results[cat_idx][img_idx],
                                 np.asarray(
                                     [x, y, x + w, y + h, res["score"]]
                                 ).reshape(1, -1),
