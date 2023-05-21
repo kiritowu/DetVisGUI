@@ -86,7 +86,7 @@ class COCO_dataset:
     def _get_data_loader(self, cfg: Config, stage: str):
         if stage == "train":
             return cfg.train_dataloader.dataset
-        elif stage == "validation":
+        elif stage == "val":
             return cfg.val_dataloader.dataset
         elif stage == "test":
             return cfg.test_dataloader.dataset
