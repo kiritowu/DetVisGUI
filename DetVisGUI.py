@@ -59,8 +59,13 @@ class COCO_dataset:
 
     def __init__(self, cfg, args):
         self.dataset = 'COCO'
-        self.img_root = getattr(cfg.data, args.stage).img_prefix
-        self.anno_root = getattr(cfg.data, args.stage).ann_file
+        dataloader = self._get_data_loader(cfg, args.stage)
+        self.img_root = os.path.join(
+            dataloader.data_root, dataloader.data_prefix.img
+        )
+        self.anno_root = os.path.join(
+            dataloader.data_root, dataloader.ann_file
+        )
         self.det_file = args.det_file
         self.has_anno = not args.no_gt
         self.mask = False
@@ -77,6 +82,16 @@ class COCO_dataset:
                 self.img_list[i]: self.results[:, i]
                 for i in range(len(self.img_list))
             }
+
+    def _get_data_loader(self, cfg: Config, stage: str):
+        if stage == "train":
+            return cfg.train_dataloader.dataset
+        elif stage == "validation":
+            return cfg.val_dataloader.dataset
+        elif stage == "test":
+            return cfg.test_dataloader.dataset
+        else:
+            raise ValueError("Unknown stage: {}".format(stage))
 
     def parse_json(self, train_anno, has_anno):
         with open(train_anno) as f:
